@@ -1,4 +1,4 @@
-package com.jbm.sample;
+package com.jbm.hazelcast.sample;
 
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
