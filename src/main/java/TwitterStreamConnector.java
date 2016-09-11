@@ -5,7 +5,6 @@ import com.twitter.hbc.core.Constants;
 import com.twitter.hbc.core.Hosts;
 import com.twitter.hbc.core.HttpHosts;
 import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint;
-import com.twitter.hbc.core.endpoint.StreamingEndpoint;
 import com.twitter.hbc.core.event.Event;
 import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
@@ -17,7 +16,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Consumer;
 
 public class TwitterStreamConnector {
 
@@ -46,6 +44,10 @@ public class TwitterStreamConnector {
     public TwitterStreamConnector addListener(TwitListener listener) {
         twitListenerList.add(listener);
         return this;
+    }
+
+    public void disconnect() {
+        hosebirdClient.stop();
     }
 
     public synchronized void connect() {

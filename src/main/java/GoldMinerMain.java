@@ -1,6 +1,6 @@
 import static java.util.Arrays.asList;
 
-public class Main {
+public class GoldMinerMain {
 
     public static void main(String args[]) {
         TwitterStreamConnector twitterStreamConnector = new TwitterStreamConnector()
