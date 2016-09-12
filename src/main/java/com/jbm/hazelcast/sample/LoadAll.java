@@ -1,5 +1,7 @@
 package com.jbm.hazelcast.sample;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapStoreConfig;
@@ -21,36 +23,28 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class LoadAll {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         int numberOfEntriesToAdd = 1000;
-        String mapName = LoadAll.class.getCanonicalName();
+//        String mapName = LoadAll.class.getCanonicalName();
 
-        Config config = createNewConfig(mapName);
-        HazelcastInstance node = Hazelcast.getOrCreateHazelcastInstance(createNewConfig("persons"));
+//        HazelcastInstance node = Hazelcast.getOrCreateHazelcastInstance(createNewConfig("persons"));
+//        IMap<Long, Person> persons = node.getMap("persons");
+//        persons.put(1L, new Person(1L, "james"));
+//        persons.put(2L, new Person(2L, "isa"));
+//
+//        persons.loadAll(true);
+//        System.out.printf("# Map store has %d elements\n", persons.size());
 
-        IMap<Long, Person> persons = node.getMap("persons");
-        persons.put(1L, new Person(1L, "james"));
-        persons.put(2L, new Person(2L, "isa"));
+        String mapName = "twits";
 
-        persons.loadAll(true);
-        System.out.printf("# Map store has %d elements\n", persons.size());
+        HazelcastInstance node = Hazelcast.getOrCreateHazelcastInstance(createNewConfig(mapName));
+        IMap<Long, Twit> twitsMap = node.getMap(mapName);
+        twitsMap.put(1L, new Twit(1L, Resources.toString(Resources.getResource("t.json"), Charsets.UTF_8)));
+        twitsMap.put(2L, new Twit(2L, Resources.toString(Resources.getResource("t2.json"), Charsets.UTF_8)));
 
-//        IMap<Integer, Integer> map = node.getMap(mapName);
-//
-//        populateMap(map, numberOfEntriesToAdd);
-//
-//        System.out.printf("# Map store has %d elements\n", numberOfEntriesToAdd);
-//
-//        map.evictAll();
-//
-//        System.out.printf("# After evictAll map size: %d\n", map.size());
-//
-//        map.loadAll(true);
-//        System.out.printf("# After loadAll map size: %d\n", map.size());
-//
-//        map.clear();
-//        map.loadAll(true);
-//        System.out.printf("# After clear-loadAll map size: %d\n", map.size());
+        twitsMap.loadAll(true);
+        System.out.printf("# Map store has %d elements\n", twitsMap.size());
+
     }
 
     private static void populateMap(IMap<Integer, Integer> map, int itemCount) {
@@ -60,8 +54,7 @@ public class LoadAll {
     }
 
     private static Config createNewConfig(String mapName) {
-//        SimpleStore mapStore = new SimpleStore();
-        PersonMapStore mapStore = new PersonMapStore();
+        TwitMapStore mapStore = new TwitMapStore();
 
         MapStoreConfig mapStoreConfig = new MapStoreConfig();
         mapStoreConfig.setImplementation(mapStore);

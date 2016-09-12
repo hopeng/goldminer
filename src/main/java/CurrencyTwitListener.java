@@ -7,8 +7,8 @@ import java.util.Map;
 public class CurrencyTwitListener implements TwitListener {
 
 //    todo persisted collection, hazelcast?
-    List<String> buySignals;
-    List<String> sellSignals;
+    List<String> longTwits;
+    List<String> shortTwits;
 
     public void onTwit(Map<String, String> message) {
         String text = message.get("text");
