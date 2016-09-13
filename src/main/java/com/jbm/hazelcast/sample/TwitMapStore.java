@@ -26,7 +26,7 @@ public class TwitMapStore implements MapStore<Long, Twit> {
         try {
             con = DriverManager.getConnection("jdbc:hsqldb:hsql://localhost:9001/goldminer", "SA", "");
             con.createStatement().executeUpdate(
-                    format("create table if not exists %s (id bigint not null, json clob(100000000), primary key (id))", tableName));
+                    format("create table if not exists %s (id bigint not null, body clob(100000000), primary key (id))", tableName));
             allKeysStatement = con.prepareStatement("select id from twit");
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -46,7 +46,7 @@ public class TwitMapStore implements MapStore<Long, Twit> {
     public synchronized void store(Long key, Twit value) {
         try {
             con.createStatement().executeUpdate(
-                    format("insert into %s values(%s,'%s')", tableName, key, value));
+                    format("insert into %s values(%s,'%s')", tableName, key, value.getBody()));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -67,13 +67,13 @@ public class TwitMapStore implements MapStore<Long, Twit> {
     public synchronized Twit load(Long key) {
         try {
             ResultSet resultSet = con.createStatement().executeQuery(
-                    format("select json from twit where id =%s", key));
+                    format("select body from twit where id =%s", key));
             try {
                 if (!resultSet.next()) {
                     return null;
                 }
-                String json = resultSet.getString(1);
-                return json == null ? null : JsonUtils.fromJson(json, Twit.class);
+                String body = resultSet.getString(1);
+                return new Twit(key, body);
 
             } finally {
                 resultSet.close();

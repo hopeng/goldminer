@@ -11,6 +11,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MapStore;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,27 +25,22 @@ import java.util.concurrent.ConcurrentMap;
 public class LoadAll {
 
     public static void main(String[] args) throws Exception {
-        int numberOfEntriesToAdd = 1000;
-//        String mapName = LoadAll.class.getCanonicalName();
-
-//        HazelcastInstance node = Hazelcast.getOrCreateHazelcastInstance(createNewConfig("persons"));
-//        IMap<Long, Person> persons = node.getMap("persons");
-//        persons.put(1L, new Person(1L, "james"));
-//        persons.put(2L, new Person(2L, "isa"));
-//
-//        persons.loadAll(true);
-//        System.out.printf("# Map store has %d elements\n", persons.size());
-
         String mapName = "twits";
 
         HazelcastInstance node = Hazelcast.getOrCreateHazelcastInstance(createNewConfig(mapName));
         IMap<Long, Twit> twitsMap = node.getMap(mapName);
-        twitsMap.put(1L, new Twit(1L, Resources.toString(Resources.getResource("t.json"), Charsets.UTF_8)));
-        twitsMap.put(2L, new Twit(2L, Resources.toString(Resources.getResource("t2.json"), Charsets.UTF_8)));
+        addElement(twitsMap, Resources.toString(Resources.getResource("t1.json"), Charsets.UTF_8));
+        addElement(twitsMap, Resources.toString(Resources.getResource("t2.json"), Charsets.UTF_8));
 
         twitsMap.loadAll(true);
         System.out.printf("# Map store has %d elements\n", twitsMap.size());
 
+    }
+
+    private static void addElement(IMap<Long, Twit> twitsMap, String twitJson) throws IOException {
+        Map<String, Object> t1 = JsonUtils.fromJson(twitJson, Map.class);
+        Long id = (Long) t1.get("id");
+        twitsMap.put(id, new Twit(id, twitJson));
     }
 
     private static void populateMap(IMap<Integer, Integer> map, int itemCount) {

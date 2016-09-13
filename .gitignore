@@ -1,3 +1,6 @@
-target
+target/
 *.iml
-.idea
+.idea/*
+!.idea/runConfigurations/
+!.idea/dataSources.xml
+hsqldb/
