@@ -29,12 +29,15 @@ public class LoadAll {
 
         HazelcastInstance node = Hazelcast.getOrCreateHazelcastInstance(createNewConfig(mapName));
         IMap<Long, Twit> twitsMap = node.getMap(mapName);
+        twitsMap.loadAll(true);
         addElement(twitsMap, Resources.toString(Resources.getResource("t1.json"), Charsets.UTF_8));
         addElement(twitsMap, Resources.toString(Resources.getResource("t2.json"), Charsets.UTF_8));
 
+        twitsMap.evictAll();
         twitsMap.loadAll(true);
         System.out.printf("# Map store has %d elements\n", twitsMap.size());
 
+        node.shutdown();
     }
 
     private static void addElement(IMap<Long, Twit> twitsMap, String twitJson) throws IOException {

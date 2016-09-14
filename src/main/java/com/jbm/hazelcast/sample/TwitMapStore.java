@@ -7,8 +7,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -28,6 +30,7 @@ public class TwitMapStore implements MapStore<Long, Twit> {
             con.createStatement().executeUpdate(
                     format("create table if not exists %s (id bigint not null, body clob(100000000), primary key (id))", tableName));
             allKeysStatement = con.prepareStatement("select id from twit");
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -45,8 +48,13 @@ public class TwitMapStore implements MapStore<Long, Twit> {
 
     public synchronized void store(Long key, Twit value) {
         try {
-            con.createStatement().executeUpdate(
-                    format("insert into %s values(%s,'%s')", tableName, key, value.getBody()));
+            int updatedCount = con.createStatement().executeUpdate(
+                    format("update %s set body='%s' where id=%s", tableName, value.getBody(), key));
+
+            if (updatedCount == 0) {
+                con.createStatement().executeUpdate(
+                        format("insert into %s values(%s,'%s')", tableName, key, value.getBody()));
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -92,6 +100,26 @@ public class TwitMapStore implements MapStore<Long, Twit> {
     }
 
     public Iterable<Long> loadAllKeys() {
-        return new StatementIterable<>(allKeysStatement);
+        List<Long> result = new ArrayList<>();
+        ResultSet rs = null;
+        try {
+            rs = allKeysStatement.executeQuery();
+            while (rs.next()) {
+                result.add(rs.getLong(1));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException ignored) {
+                }
+            }
+        }
+
+        return result;
     }
 }
