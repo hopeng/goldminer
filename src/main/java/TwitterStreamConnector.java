@@ -1,4 +1,6 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jbm.hazelcast.util.HazelcastMapFactory;
+import com.jbm.model.Twit;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
 import com.twitter.hbc.core.Constants;
@@ -9,6 +11,8 @@ import com.twitter.hbc.core.event.Event;
 import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +23,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class TwitterStreamConnector {
 
+    private static final Logger log = LoggerFactory.getLogger(TwitterStreamConnector.class);
+
     /** Set up your blocking queues: Be sure to size these properly based on expected TPS of your stream */
     final BlockingQueue<String> msgQueue = new LinkedBlockingQueue<>(100000);
     final BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<>(1000);
@@ -27,8 +33,11 @@ public class TwitterStreamConnector {
 
     StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
 
+    Map<Long, Twit> storageMap;
+
     Thread msgConsumer;
     private Client hosebirdClient;
+    private String mapName = "TWITS_";
 
     public TwitterStreamConnector() {
         hosebirdEndpoint
@@ -36,8 +45,11 @@ public class TwitterStreamConnector {
                 .languages(Arrays.asList("en"));
     }
 
+    // todo make it re-runnable
     public TwitterStreamConnector setContentFilters(List<String> contentFilters) {
         hosebirdEndpoint.trackTerms(contentFilters);
+        mapName += contentFilters.get(0);
+        storageMap = HazelcastMapFactory.getMap(mapName);
         return this;
     }
 
@@ -50,7 +62,7 @@ public class TwitterStreamConnector {
         hosebirdClient.stop();
     }
 
-    public synchronized void connect() {
+    public synchronized TwitterStreamConnector connect() {
         if (hosebirdClient != null) {
             throw new RuntimeException("already connected");
         }
@@ -84,7 +96,10 @@ public class TwitterStreamConnector {
 
                     try {
                         String msg = msgQueue.take();
-                        final Map<String, String> msgMap = mapper.readValue(msg, Map.class);
+                        final Map<String, Object> msgMap = mapper.readValue(msg, Map.class);
+                        Long id = (Long) msgMap.get("id");
+                        log.info("going to save twit to storage {}", mapName);
+                        storageMap.put(id, new Twit(id, msg));
 
                         twitListenerList.forEach(
                             listener -> listener.onTwit(msgMap)
@@ -97,6 +112,7 @@ public class TwitterStreamConnector {
             }
         };
         msgConsumer.start();
+        return this;
     }
 
     public void waitForDone(long timeout) {

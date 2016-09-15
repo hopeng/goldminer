@@ -5,6 +5,6 @@ import java.util.Map;
  */
 public interface TwitListener {
 
-    public void onTwit(Map<String, String> message);
+    public void onTwit(Map<String, Object> message);
 
 }

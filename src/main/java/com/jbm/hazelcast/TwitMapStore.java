@@ -1,6 +1,7 @@
-package com.jbm.hazelcast.sample;
+package com.jbm.hazelcast;
 
 import com.hazelcast.core.MapStore;
+import com.jbm.model.Twit;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,14 +23,15 @@ public class TwitMapStore implements MapStore<Long, Twit> {
 
     private final Connection con;
     private final PreparedStatement allKeysStatement;
-    private String tableName = "twit";
+    private String tableName;
 
-    public TwitMapStore() {
+    public TwitMapStore(String tableName) {
+        this.tableName = tableName;
         try {
             con = DriverManager.getConnection("jdbc:hsqldb:hsql://localhost:9001/goldminer", "SA", "");
             con.createStatement().executeUpdate(
                     format("create table if not exists %s (id bigint not null, body clob(100000000), primary key (id))", tableName));
-            allKeysStatement = con.prepareStatement("select id from twit");
+            allKeysStatement = con.prepareStatement("select id from " + tableName);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -41,22 +43,24 @@ public class TwitMapStore implements MapStore<Long, Twit> {
         try {
             con.createStatement().executeUpdate(
                     format("delete from %s where id = %s", tableName, key));
+
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("failed to delete by id: " + key, e);
         }
     }
 
     public synchronized void store(Long key, Twit value) {
         try {
             int updatedCount = con.createStatement().executeUpdate(
-                    format("update %s set body='%s' where id=%s", tableName, value.getBody(), key));
+                    format("update %s set body='%s' where id=%s", tableName, value.getBody().replaceAll("'", "''"), key));
 
             if (updatedCount == 0) {
                 con.createStatement().executeUpdate(
                         format("insert into %s values(%s,'%s')", tableName, key, value.getBody()));
             }
+
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("failed to store twit: " + value.getBody(), e);
         }
     }
 
@@ -75,7 +79,7 @@ public class TwitMapStore implements MapStore<Long, Twit> {
     public synchronized Twit load(Long key) {
         try {
             ResultSet resultSet = con.createStatement().executeQuery(
-                    format("select body from twit where id =%s", key));
+                    format("select body from %s where id =%s", tableName, key));
             try {
                 if (!resultSet.next()) {
                     return null;
@@ -87,7 +91,7 @@ public class TwitMapStore implements MapStore<Long, Twit> {
                 resultSet.close();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("failed to load by id:" + key, e);
         }
     }
 

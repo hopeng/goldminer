@@ -1,4 +1,6 @@
-package com.jbm.hazelcast.sample;
+package com.jbm.model;
+
+import com.jbm.hazelcast.sample.JsonUtils;
 
 import java.io.Serializable;
 import java.util.HashMap;
