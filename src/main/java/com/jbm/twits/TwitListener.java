@@ -1,3 +1,5 @@
+package com.jbm.twits;
+
 import java.util.Map;
 
 /**

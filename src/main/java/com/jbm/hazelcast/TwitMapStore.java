@@ -52,7 +52,7 @@ public class TwitMapStore implements MapStore<Long, Twit> {
     public synchronized void store(Long key, Twit value) {
         try {
             int updatedCount = con.createStatement().executeUpdate(
-                    format("update %s set body='%s' where id=%s", tableName, value.getBody().replaceAll("'", "''"), key));
+                    format("update %s set body='%s' where id=%s", tableName, value.getBody().replaceAll("'", ""), key));
 
             if (updatedCount == 0) {
                 con.createStatement().executeUpdate(

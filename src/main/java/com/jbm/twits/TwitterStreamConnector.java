@@ -1,3 +1,5 @@
+package com.jbm.twits;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jbm.hazelcast.util.HazelcastMapFactory;
 import com.jbm.model.Twit;
