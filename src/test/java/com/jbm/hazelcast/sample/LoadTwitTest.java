@@ -10,6 +10,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.jbm.hazelcast.TwitMapStore;
 import com.jbm.model.Twit;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Map;
@@ -17,9 +18,10 @@ import java.util.Map;
 /**
  * Created by hopeng on 11/09/2016.
  */
-public class LoadTwit {
+public class LoadTwitTest {
 
-    public static void main(String[] args) throws Exception {
+    @Test
+    public void test() throws IOException {
         String mapName = "twitTest";
 
         HazelcastInstance node = Hazelcast.getOrCreateHazelcastInstance(createNewConfig(mapName));
