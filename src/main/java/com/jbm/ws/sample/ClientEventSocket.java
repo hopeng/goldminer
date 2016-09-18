@@ -1,4 +1,4 @@
-package com.jbm.ws;
+package com.jbm.ws.sample;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.CloseReason;

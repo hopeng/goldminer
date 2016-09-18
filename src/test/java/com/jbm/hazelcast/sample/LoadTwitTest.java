@@ -13,7 +13,6 @@ import com.jbm.model.Twit;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * Created by hopeng on 11/09/2016.
@@ -41,9 +40,8 @@ public class LoadTwitTest {
     }
 
     private static void addElement(IMap<Long, Twit> twitsMap, String twitJson) throws IOException {
-        Map<String, Object> t1 = JsonUtils.fromJson(twitJson, Map.class);
-        Long id = (Long) t1.get("id");
-        twitsMap.put(id, new Twit(id, twitJson));
+        Twit value = new Twit(twitJson);
+        twitsMap.put(value.getId(), value);
     }
 
     private static Config createNewConfig(String mapName) {

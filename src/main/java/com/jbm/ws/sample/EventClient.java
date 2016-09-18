@@ -1,4 +1,4 @@
-package com.jbm.ws;
+package com.jbm.ws.sample;
 
 import org.eclipse.jetty.util.component.LifeCycle;
 

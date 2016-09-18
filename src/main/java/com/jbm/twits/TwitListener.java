@@ -1,12 +1,12 @@
 package com.jbm.twits;
 
-import java.util.Map;
+import com.jbm.model.Twit;
 
 /**
  * Created by hopeng on 11/09/2016.
  */
 public interface TwitListener {
 
-    public void onTwit(Map<String, Object> message);
+    public void onTwit(Twit twit);
 
 }

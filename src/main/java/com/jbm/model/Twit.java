@@ -6,17 +6,22 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Database entity
+ */
 public class Twit implements Serializable {
 
     private Long id;
 
     private String body;
 
-    private transient Map<String, String> contentMap = new HashMap<>();
+    private transient Map<String, Object> contentMap = new HashMap<>();
 
-    public Twit(Long id, String body) {
-        this.id = id;
+    public Twit(String body) {
         this.body = body;
+        this.contentMap = JsonUtils.fromJson(body, Map.class);
+        this.id = (Long) this.contentMap.get("id");
+
     }
 
     public Twit() {
@@ -26,21 +31,16 @@ public class Twit implements Serializable {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getBody() {
         return body;
     }
 
-    public void setBody(String body) {
-        this.body = body;
-        this.contentMap = JsonUtils.fromJson(body, Map.class);
-    }
-
-    public Map<String, String> getContentMap() {
-        return contentMap;
+    // todo work around, twitKeyStore not loading with the Twit constructor
+    public <T> T get(String key) {
+        if (this.contentMap == null) {
+            this.contentMap = JsonUtils.fromJson(body, Map.class);
+        }
+        return (T) contentMap.get(key);
     }
 
     @Override

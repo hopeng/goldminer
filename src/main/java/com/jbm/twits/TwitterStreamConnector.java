@@ -1,6 +1,5 @@
 package com.jbm.twits;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jbm.hazelcast.util.HazelcastMapFactory;
 import com.jbm.model.Twit;
 import com.twitter.hbc.ClientBuilder;
@@ -27,7 +26,9 @@ public class TwitterStreamConnector {
 
     private static final Logger log = LoggerFactory.getLogger(TwitterStreamConnector.class);
 
-    /** Set up your blocking queues: Be sure to size these properly based on expected TPS of your stream */
+    /**
+     * Set up your blocking queues: Be sure to size these properly based on expected TPS of your stream
+     */
     final BlockingQueue<String> msgQueue = new LinkedBlockingQueue<>(100000);
     final BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<>(1000);
 
@@ -89,7 +90,6 @@ public class TwitterStreamConnector {
 
         hosebirdClient = builder.build();
         hosebirdClient.connect();
-        final ObjectMapper mapper = new ObjectMapper();
 
         msgConsumer = new Thread() {
             @Override
@@ -98,14 +98,11 @@ public class TwitterStreamConnector {
 
                     try {
                         String msg = msgQueue.take();
-                        final Map<String, Object> msgMap = mapper.readValue(msg, Map.class);
-                        Long id = (Long) msgMap.get("id");
                         log.info("going to save twit to storage {}", mapName);
-                        storageMap.put(id, new Twit(id, msg));
+                        Twit twit = new Twit(msg);
+                        storageMap.put(twit.getId(), twit);
 
-                        twitListenerList.forEach(
-                            listener -> listener.onTwit(msgMap)
-                        );
+                        twitListenerList.forEach(listener -> listener.onTwit(twit));
 
                     } catch (Exception e) {
                         e.printStackTrace();

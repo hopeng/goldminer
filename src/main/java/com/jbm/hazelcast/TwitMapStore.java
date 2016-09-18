@@ -31,7 +31,8 @@ public class TwitMapStore implements MapStore<Long, Twit> {
             con = DriverManager.getConnection("jdbc:hsqldb:hsql://localhost:9001/goldminer", "SA", "");
             con.createStatement().executeUpdate(
                     format("create table if not exists %s (id bigint not null, body clob(100000000), primary key (id))", tableName));
-            allKeysStatement = con.prepareStatement("select id from " + tableName);
+            // todo workaround: limit result for test
+            allKeysStatement = con.prepareStatement("select id from " + tableName + " limit 100");
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -86,7 +87,7 @@ public class TwitMapStore implements MapStore<Long, Twit> {
                     return null;
                 }
                 String body = resultSet.getString(1);
-                return new Twit(key, body);
+                return new Twit(body);
 
             } finally {
                 resultSet.close();

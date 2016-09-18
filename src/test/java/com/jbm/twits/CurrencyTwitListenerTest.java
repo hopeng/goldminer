@@ -1,10 +1,15 @@
 package com.jbm.twits;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import com.jbm.model.Twit;
+import com.jbm.model.TwitDto;
 import org.junit.Test;
 
-import static com.jbm.twits.CurrencyTwitListener.Bias.Long;
-import static com.jbm.twits.CurrencyTwitListener.Bias.Neutral;
-import static com.jbm.twits.CurrencyTwitListener.Bias.Short;
+import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -13,15 +18,17 @@ import static org.junit.Assert.assertEquals;
 public class CurrencyTwitListenerTest {
 
     @Test
-    public void testBias() {
-        CurrencyTwitListener listener = new CurrencyTwitListener();
-
-        assertEquals(Long, listener.analyseBias("this is going up!"));
-        assertEquals(Short, listener.analyseBias("it's a bearish day today!"));
-        assertEquals(Neutral, listener.analyseBias("flat really"));
-        assertEquals(Neutral, listener.analyseBias("no update today"));
-        assertEquals(Neutral, listener.analyseBias("download my magic strategy"));
-
+    public void testDateParse() {
+        DateTimeFormatter formatter = TwitDto.DATETIME_PATTERN;
+        ZonedDateTime dt = ZonedDateTime.parse("Fri Sep 09 11:40:51 +0000 2016", formatter);
+        assertEquals(dt.format(formatter), "Fri Sep 09 11:40:51 +0000 2016");
     }
 
+    @Test
+    public void testOnTwit() throws IOException {
+        String json = Resources.toString(Resources.getResource("t1.json"), Charsets.UTF_8);
+
+        CurrencyTwitListener listener = new CurrencyTwitListener();
+        listener.onTwit(new Twit(json));
+    }
 }

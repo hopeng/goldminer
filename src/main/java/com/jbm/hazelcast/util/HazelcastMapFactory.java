@@ -23,6 +23,7 @@ public class HazelcastMapFactory {
         }));
     }
 
+    // todo second call to getMap doesn't load using TwitMapStore
     public static <K,V> Map<K, V> getMap(String mapName) {
         return Hazelcast.getOrCreateHazelcastInstance(createNewConfig(mapName)).getMap(mapName);
     }

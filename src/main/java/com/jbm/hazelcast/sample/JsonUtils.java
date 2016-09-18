@@ -1,17 +1,36 @@
 package com.jbm.hazelcast.sample;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.google.common.base.Ascii;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public final class JsonUtils {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final DateTimeFormatter DATETIME_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    static {
+        SimpleModule module = new SimpleModule("SimpleModule");
+        module.addSerializer(ZonedDateTime.class, new JsonSerializer<ZonedDateTime>() {
+            @Override
+            public void serialize(ZonedDateTime value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+                gen.writeString(value.format(DATETIME_PATTERN));
+            }
+        });
+
+        MAPPER.registerModule(module);
+    }
 
     public static String toJson(Object obj) {
         try {
