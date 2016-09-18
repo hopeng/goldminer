@@ -30,6 +30,7 @@ public class CurrencyTwitListener implements TwitListener {
         log.info("{} - {}: {}", bias, createdAt, text.replaceAll("\n", "\t"));
 
         // todo send to websocket
+
     }
 
     // todo use LingPipe for NLP

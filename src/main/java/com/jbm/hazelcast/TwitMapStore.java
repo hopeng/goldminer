@@ -51,12 +51,13 @@ public class TwitMapStore implements MapStore<Long, Twit> {
 
     public synchronized void store(Long key, Twit value) {
         try {
+            String body = value.getBody().replaceAll("'", "''''");
             int updatedCount = con.createStatement().executeUpdate(
-                    format("update %s set body='%s' where id=%s", tableName, value.getBody().replaceAll("'", ""), key));
+                    format("update %s set body='%s' where id=%s", tableName, body, key));
 
             if (updatedCount == 0) {
                 con.createStatement().executeUpdate(
-                        format("insert into %s values(%s,'%s')", tableName, key, value.getBody()));
+                        format("insert into %s values(%s,'%s')", tableName, key, body));
             }
 
         } catch (SQLException e) {

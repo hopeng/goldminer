@@ -17,13 +17,10 @@ public class HazelcastMapFactory {
     private static String INSTANCE_NAME = "goldminerHazelcast";
 
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                System.out.println("shutting down hazelcast");
-                Hazelcast.shutdownAll();
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("shutting down hazelcast");
+            Hazelcast.shutdownAll();
+        }));
     }
 
     public static <K,V> Map<K, V> getMap(String mapName) {

@@ -18,6 +18,13 @@ public class JettyWebsocketServer {
     private static JettyWebsocketServer instance;
     private int port = 8080;
 
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("shutting down " + JettyWebsocketServer.class.getSimpleName());
+            getInstance().stop();
+        }));
+    }
+
     public static synchronized JettyWebsocketServer getInstance() {
         if (instance == null) {
             instance = new JettyWebsocketServer();
@@ -60,10 +67,12 @@ public class JettyWebsocketServer {
     }
 
     public void stop() {
-        try {
-            server.stop();
-        } catch (Exception e) {
-            log.error("cannot stop websocket server", e);
+        if (server != null) {
+            try {
+                server.stop();
+            } catch (Exception e) {
+                log.error("cannot stop websocket server", e);
+            }
         }
     }
 }
