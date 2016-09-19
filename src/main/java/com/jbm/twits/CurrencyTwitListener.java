@@ -1,5 +1,6 @@
 package com.jbm.twits;
 
+import com.jbm.model.EventType;
 import com.jbm.model.Twit;
 import com.jbm.model.TwitDto;
 import com.jbm.ws.WsClientSessionManager;
@@ -17,7 +18,7 @@ public class CurrencyTwitListener implements TwitListener {
 
     public void onTwit(Twit twit) {
         TwitDto dto = twitDtoCreator.createDto(twit);
-        wsClientSessionManager.broadcast(dto);
+        wsClientSessionManager.broadcast(EventType.TradeBias, dto);
     }
 
 }

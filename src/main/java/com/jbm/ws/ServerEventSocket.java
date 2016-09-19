@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static com.jbm.model.EventType.TradeBias;
+
 @ServerEndpoint(value = "/events/")
 public class ServerEventSocket {
     private static final Logger log = LoggerFactory.getLogger(ServerEventSocket.class);
@@ -37,14 +39,14 @@ public class ServerEventSocket {
         System.out.println("Received TEXT message: " + message);
         if ("reload".equals(message)) {
 //            todo better way to retrieve map, avoid hardcoding map name
-//            todo async and avoid duplicate action
+//            todo async
             Map<String, Twit> twitsMap = HazelcastMapFactory.getMap("TWITS_GBPUSD");
             List<Twit> twits = new ArrayList<>(twitsMap.values());
             Collections.sort(twits, (o1, o2) -> o1.getId().compareTo(o2.getId())); // todo sort during getMap()?
             twits.forEach(twit -> {
                 try {
                     TwitDto dto = twitDtoCreator.createDto(twit);
-                    session.getBasicRemote().sendText(String.valueOf(dto));
+                    wsClientSessionManager.sendEvent(session, TradeBias, dto);
                 } catch (IOException e) {
                     log.error("failed to send twit to ws client", e);
                 }

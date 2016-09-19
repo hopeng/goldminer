@@ -24,6 +24,8 @@ public class TwitMapStore implements MapStore<Long, Twit> {
     private final Connection con;
     private final PreparedStatement allKeysStatement;
     private String tableName;
+    private int LOAD_LIMIT = 100;
+
 
     public TwitMapStore(String tableName) {
         this.tableName = tableName;
@@ -31,8 +33,8 @@ public class TwitMapStore implements MapStore<Long, Twit> {
             con = DriverManager.getConnection("jdbc:hsqldb:hsql://localhost:9001/goldminer", "SA", "");
             con.createStatement().executeUpdate(
                     format("create table if not exists %s (id bigint not null, body clob(100000000), primary key (id))", tableName));
-            // todo workaround: limit result for test
-            allKeysStatement = con.prepareStatement("select id from " + tableName + " limit 100");
+            allKeysStatement = con.prepareStatement(
+                    String.format("select id from (select * from %s order by id desc limit %d) order by id", tableName, LOAD_LIMIT));
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

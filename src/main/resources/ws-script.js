@@ -1,12 +1,4 @@
 var plotDiv = document.getElementById('tester');
-var line1 = {
-  x: ['2013-10-04 22:23:00', '2013-11-04 22:23:00', '2013-12-04 22:23:00', '2013-12-11 22:23:00', '2014-01-01 22:22:00'],
-  y: [1, 2, 4, 8, 16]
-};
-var line2 = {
-  x: ['2013-10-04 22:23:00', '2013-11-04 22:23:00', '2013-12-04 22:23:00', '2013-12-11 22:23:00', '2014-01-01 22:22:00'],
-  y: [1, 2, 3, 5, 1]
-};
 
 var longMatrixIndex = 0;
 var shortMatrixIndex = 1;
@@ -26,7 +18,7 @@ Plotly.plot(plotDiv, [
     margin: {t: 0}
   });
 
-
+var messageCount = 0;
 function WebSocketDataReceiver() {
   if (!("WebSocket" in window)) {
     alert("WebSocket NOT supported by your Browser!");
@@ -43,37 +35,59 @@ function WebSocketDataReceiver() {
   };
 
   ws.onmessage = function (evt) {
-    console.log("Message is received: ", evt.data);
-    var twitMessage = JSON.parse(evt.data);
-    var lineIndex;
-
-    switch (twitMessage.bias) {
-      case "Long":
-        var percent = (++longCount / ++total) * 100;
-        lineIndex = 0;
+    var msg = JSON.parse(evt.data);
+    switch (msg.eventType) {
+      case "TradeBias":
+        plotTradeBias(msg.payload);
         break;
 
-      case "Short":
-        percent = (++shortCount / ++total) * 100;
-        lineIndex = 1;
-        break;
-
-      case "Neutral":
-        percent = (++neutralCount / ++total) * 100;
-        lineIndex = 2;
+      case "PriceQuote":
+        plotPriceChart(msg.payload);
         break;
 
       default:
-        console.log('unknown type: ', twitMessage.bias);
+        console.log("unknown event: ", evt);
     }
-
-    var update = {x: [[twitMessage.createdAt]],y: [[percent.toFixed(0)]]};
-
-    Plotly.extendTraces(plotDiv, update, [lineIndex], 2000);
   };
 
   ws.onclose = function () {
     // websocket is closed.
     alert("Connection is closed...");
   };
+}
+
+function plotTradeBias(data) {
+  messageCount++;
+  console.log(messageCount, " Message is received: ", data);
+  var twitMessage = JSON.parse(data);
+  var lineIndex;
+
+  switch (twitMessage.bias) {
+    case "Long":
+      var percent = (++longCount / ++total) * 100;
+      lineIndex = 0;
+      break;
+
+    case "Short":
+      percent = (++shortCount / ++total) * 100;
+      lineIndex = 1;
+      break;
+
+    case "Neutral":
+      percent = (++neutralCount / ++total) * 100;
+      lineIndex = 2;
+      break;
+
+    default:
+      console.log('unknown type: ', twitMessage.bias);
+  }
+
+  // be gentle with plotly to push data every 100ms, not too fast
+  setTimeout(function () {
+    if (percent === 100) { // skip false percentage, todo fix the 100% calc
+      return;
+    }
+    var update = {x: [[twitMessage.createdAt]], y: [[percent.toFixed(0)]]};
+    Plotly.extendTraces(plotDiv, update, [lineIndex], 2000);
+  }, 200);
 }
