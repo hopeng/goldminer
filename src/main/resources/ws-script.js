@@ -18,7 +18,7 @@ Plotly.plot(plotDiv, [
     margin: {t: 0}
   });
 
-var messageCount = 0;
+
 function WebSocketDataReceiver() {
   if (!("WebSocket" in window)) {
     alert("WebSocket NOT supported by your Browser!");
@@ -38,7 +38,9 @@ function WebSocketDataReceiver() {
     var msg = JSON.parse(evt.data);
     switch (msg.eventType) {
       case "TradeBias":
-        plotTradeBias(msg.payload);
+        var twitDto = JSON.parse(msg.payload);
+        plotTradeBias(twitDto);
+        populateMessageDashboard(twitDto);
         break;
 
       case "PriceQuote":
@@ -56,13 +58,11 @@ function WebSocketDataReceiver() {
   };
 }
 
-function plotTradeBias(data) {
-  messageCount++;
-  console.log(messageCount, " Message is received: ", data);
-  var twitMessage = JSON.parse(data);
+function plotTradeBias(twitDto) {
+  console.log(total, " Message is received: ", twitDto);
   var lineIndex;
 
-  switch (twitMessage.bias) {
+  switch (twitDto.bias) {
     case "Long":
       var percent = (++longCount / ++total) * 100;
       lineIndex = 0;
@@ -79,15 +79,25 @@ function plotTradeBias(data) {
       break;
 
     default:
-      console.log('unknown type: ', twitMessage.bias);
+      console.log('unknown type: ', twitDto.bias);
   }
 
   // be gentle with plotly to push data every 100ms, not too fast
-  setTimeout(function () {
-    if (percent === 100) { // skip false percentage, todo fix the 100% calc
-      return;
-    }
-    var update = {x: [[twitMessage.createdAt]], y: [[percent.toFixed(0)]]};
-    Plotly.extendTraces(plotDiv, update, [lineIndex], 2000);
-  }, 200);
+  if (total > 20) {
+    setTimeout(function () {
+      var update = {x: [[twitDto.createdAt]], y: [[percent.toFixed(0)]]};
+      Plotly.extendTraces(plotDiv, update, [lineIndex], 2000);
+    }, 200);
+  }
+}
+
+function populateMessageDashboard(twitDto) {
+  var node = document.createElement("a");
+  node.innerHTML = twitDto.message;
+  node.href = "#";
+  node.className = "list-group-item list-group-item-action";
+
+  var listName = twitDto.bias + 'List';
+  document.getElementById(listName).appendChild(node);
+
 }

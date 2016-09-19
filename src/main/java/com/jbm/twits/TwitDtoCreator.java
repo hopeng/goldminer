@@ -14,8 +14,8 @@ import java.util.List;
 public class TwitDtoCreator {
     private static final Logger log = LoggerFactory.getLogger(TwitDtoCreator.class);
 
-    private static List<String> LONG_HINTS = Arrays.asList("buy", "bought", "long", "bullish", "strong", "up");
-    private static List<String> SHORT_HINTS = Arrays.asList("sell", "sold", "short", "bearish", "weak", "down");
+    private static List<String> LONG_HINTS = Arrays.asList("buy", "bought", "long", "bullish", "strong", "up", "rise");
+    private static List<String> SHORT_HINTS = Arrays.asList("sell", "sold", "short", "bearish", "weak", "down", "fall");
 
     public TwitDto createDto(Twit twit) {
         String text = twit.get("text");
