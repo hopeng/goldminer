@@ -98,7 +98,7 @@ public class TwitterStreamConnector {
 
                     try {
                         String msg = msgQueue.take();
-                        log.info("going to save twit to storage {}", mapName);
+//                        log.info("going to save twit to storage {}", mapName);
                         Twit twit = new Twit(msg);
                         storageMap.put(twit.getId(), twit);
 

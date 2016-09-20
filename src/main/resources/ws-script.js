@@ -39,8 +39,11 @@ function WebSocketDataReceiver() {
     switch (msg.eventType) {
       case "TradeBias":
         var twitDto = JSON.parse(msg.payload);
-        plotTradeBias(twitDto);
-        populateMessageDashboard(twitDto);
+        // todo better throttling not to freeze UI
+        setTimeout(function () {
+          plotTradeBias(twitDto);
+          populateMessageDashboard(twitDto);
+        }, 200);
         break;
 
       case "PriceQuote":
@@ -84,20 +87,42 @@ function plotTradeBias(twitDto) {
 
   // be gentle with plotly to push data every 100ms, not too fast
   if (total > 20) {
-    setTimeout(function () {
-      var update = {x: [[twitDto.createdAt]], y: [[percent.toFixed(0)]]};
-      Plotly.extendTraces(plotDiv, update, [lineIndex], 2000);
-    }, 200);
+    var update = {x: [[twitDto.createdAt]], y: [[percent.toFixed(0)]]};
+    Plotly.extendTraces(plotDiv, update, [lineIndex], 2000);
   }
 }
 
+var longListElement = document.getElementById('LongList');
+var shortListElement = document.getElementById('ShortList');
+var neutralListElement = document.getElementById('NeutralList');
+
 function populateMessageDashboard(twitDto) {
+  var listElement;
+  var count = 0;
+
+  switch (twitDto.bias) {
+    case "Long":
+      listElement = longListElement;
+      count = longCount;
+      break;
+
+    case "Short":
+      listElement = shortListElement;
+      count = shortCount;
+      break;
+
+    case "Neutral":
+      listElement = neutralListElement;
+      count = neutralCount;
+      break;
+
+    default:
+  }
+
   var node = document.createElement("a");
-  node.innerHTML = twitDto.message;
+  node.innerHTML = '#' + count + '. ' + twitDto.createdAt + ': ' + twitDto.message;
   node.href = "#";
   node.className = "list-group-item list-group-item-action";
 
-  var listName = twitDto.bias + 'List';
-  document.getElementById(listName).appendChild(node);
-
+  listElement.insertBefore(node, listElement.firstChild);
 }
